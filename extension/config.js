@@ -1,0 +1,2 @@
+/* exported IHME_DEFAULT_SERVER_URL */
+const IHME_DEFAULT_SERVER_URL = "http://127.0.0.1:8001";

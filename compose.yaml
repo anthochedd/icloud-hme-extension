@@ -1,0 +1,16 @@
+services:
+  ihme:
+    build: .
+    restart: unless-stopped
+    environment:
+      IHME_HOST_ADDRESSES: ${IHME_HOST_ADDRESSES:-}
+    ports:
+      - "8001:8001"
+    volumes:
+      - ihme-data:/app/data
+    init: true
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  ihme-data:

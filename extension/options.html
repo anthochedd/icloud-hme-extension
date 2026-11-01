@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="config.js"></script>
+  <meta charset="utf-8" />
+  <title>Icloud HME</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <div class="options-container">
+    <header class="options-header">
+      <h1>Extension Configuration</h1>
+      <p>Configure endpoint routing and authentication for iCloud HME</p>
+    </header>
+
+    <form id="options-form" class="card">
+      <div class="field">
+        <label for="server-url">Server Endpoint URL</label>
+        <input type="url" id="server-url" placeholder="http://127.0.0.1:8001…" required />
+        <span class="help-text">Default server URL: <code>http://127.0.0.1:8001</code> or local LAN IP.</span>
+      </div>
+
+      <div class="field">
+        <label for="api-key">API Key</label>
+        <input type="password" id="api-key" placeholder="ihme_live_…" required />
+        <span class="help-text">Create an API key in the Chrome Extension tab of your dashboard.</span>
+      </div>
+
+      <div id="test-result" class="test-result hidden"></div>
+
+      <div class="actions-row">
+        <button type="button" id="test-btn" class="btn secondary-btn">Test Connection</button>
+        <button type="submit" id="save-btn" class="btn primary-btn">Save Settings</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

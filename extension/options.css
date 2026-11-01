@@ -1,0 +1,196 @@
+/* Vercel Design System - Chrome Extension Options */
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('fonts/Geist-Variable.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('fonts/GeistMono-Variable.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  --bg: #ffffff;
+  --bg-subtle: #fafafa;
+  --bg-hover: #f5f5f5;
+  --text: #171717;
+  --text-muted: #666666;
+  --shadow-border: 0 0 0 1px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --blue: #0070f3;
+  --green: #10b981;
+  --green-subtle: rgba(16, 185, 129, 0.08);
+  --red: #ee0000;
+  --red-subtle: rgba(238, 0, 0, 0.08);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --bg-subtle: #0a0a0a;
+    --bg-hover: #141414;
+    --text: #ededed;
+    --text-muted: #888888;
+    --shadow-border: 0 0 0 1px rgba(255, 255, 255, 0.14);
+    --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.14), 0 1px 2px rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-subtle);
+  color: var(--text);
+  font-family: 'Geist Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.015em;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.options-container {
+  width: 100%;
+  max-width: 500px;
+}
+
+.options-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.options-header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin-bottom: 4px;
+}
+
+.options-header p {
+  color: var(--text-muted);
+  font-size: 13.5px;
+}
+
+.card {
+  background-color: var(--bg);
+  box-shadow: var(--shadow-card);
+  border-radius: 12px;
+  padding: 28px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.field input {
+  font-family: inherit;
+  font-size: 14px;
+  height: 40px;
+  padding: 0 12px;
+  background-color: var(--bg);
+  color: var(--text);
+  border-radius: 6px;
+  border: none;
+  box-shadow: var(--shadow-border);
+  outline: none;
+  transition: box-shadow 0.15s ease;
+}
+
+.field input:focus {
+  box-shadow: 0 0 0 1px var(--blue), 0 0 0 3px rgba(0, 112, 243, 0.15);
+}
+
+.help-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.help-text code {
+  font-family: 'Geist Mono', monospace;
+  background-color: var(--bg-subtle);
+  padding: 2px 6px;
+  border-radius: 4px;
+  box-shadow: var(--shadow-border);
+}
+
+.actions-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.btn {
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.primary-btn {
+  background-color: var(--text);
+  color: var(--bg);
+}
+
+.primary-btn:hover { opacity: 0.9; }
+
+.secondary-btn {
+  background-color: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow-border);
+}
+
+.secondary-btn:hover { background-color: var(--bg-hover); }
+
+.test-result {
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.test-result.success {
+  background-color: var(--green-subtle);
+  color: var(--green);
+  box-shadow: 0 0 0 1px var(--green);
+}
+
+.test-result.error {
+  background-color: var(--red-subtle);
+  color: var(--red);
+  box-shadow: 0 0 0 1px var(--red);
+}
+
+.hidden { display: none !important; }

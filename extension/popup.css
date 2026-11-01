@@ -1,0 +1,671 @@
+/* Liquid Glass Dark - iCloud HME Extension Popup */
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('fonts/Geist-Variable.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('fonts/GeistMono-Variable.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  --border-glass: rgba(255, 255, 255, 0.07);
+  --border-glass-top: rgba(255, 255, 255, 0.14);
+  --text: #f3f4f6;
+  --text-muted: #9ca3af;
+  --text-subtle: #6b7280;
+  --green: #10b981;
+  --green-glow: rgba(16, 185, 129, 0.4);
+  --amber: #f59e0b;
+  --red: #ef4444;
+  color-scheme: dark;
+}
+
+/* ------------------------------------------------------------- Scrollbar Removal */
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* ------------------------------------------------------------- Base Container */
+body {
+  width: 360px;
+  min-height: 380px;
+  background: radial-gradient(circle at 50% 0%, rgba(32, 38, 56, 0.45) 0%, #090a0e 85%);
+  color: var(--text);
+  font-family: 'Geist Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.5;
+  letter-spacing: -0.015em;
+  font-feature-settings: "liga" 1, "tnum" 1;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  padding: 16px;
+  user-select: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* ------------------------------------------------------------- Header */
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 14px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Header Pills (Account Count & Pool Status) */
+.header-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border-glass);
+  border-top: 1px solid var(--border-glass-top);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  font-size: 11px;
+  font-weight: 550;
+  color: var(--text-muted);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.header-pill svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--green);
+  box-shadow: 0 0 8px var(--green-glow);
+}
+
+.dot.warn {
+  background-color: var(--amber);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+}
+
+.dot.err {
+  background-color: var(--red);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+.icon-btn {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--border-glass);
+  border-top: 1px solid var(--border-glass-top);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: all 0.15s ease;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+.icon-btn.active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+}
+
+/* ------------------------------------------------------------- Forms & Inputs */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+
+.field label {
+  font-size: 11.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
+.field-hint {
+  font-size: 10.5px;
+  color: var(--text-subtle);
+  margin-top: 2px;
+}
+
+.field input {
+  font-family: inherit;
+  font-size: 13.5px;
+  height: 38px;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--text);
+  border-radius: 8px;
+  border: 1px solid var(--border-glass);
+  border-top: 1px solid var(--border-glass-top);
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+  transition: all 0.15s ease;
+}
+
+.field input:focus {
+  background: rgba(255, 255, 255, 0.065);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* ------------------------------------------------------------- Buttons */
+.btn {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.primary-btn {
+  background: linear-gradient(180deg, #ffffff 0%, #e2e4e8 100%);
+  color: #050608;
+  font-weight: 600;
+  box-shadow: 0 2px 12px rgba(255, 255, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.primary-btn:hover {
+  opacity: 0.95;
+  transform: translateY(-0.5px);
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2), inset 0 1px 0 #ffffff;
+}
+
+.primary-btn:active {
+  transform: translateY(0);
+}
+
+.secondary-btn {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text);
+  border: 1px solid var(--border-glass);
+  border-top: 1px solid var(--border-glass-top);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.danger-btn {
+  background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  font-weight: 600;
+  border: 1px solid rgba(239, 68, 68, 0.6);
+  box-shadow: 0 2px 12px rgba(239, 68, 68, 0.35);
+}
+
+.danger-btn:hover {
+  background: linear-gradient(180deg, #f87171 0%, #ef4444 100%);
+  transform: translateY(-0.5px);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.5);
+}
+
+.btn-block { width: 100%; }
+.btn-sm { height: 28px; font-size: 11.5px; padding: 0 10px; border-radius: 6px; }
+
+/* ------------------------------------------------------------- Result Card */
+.result-card {
+  margin-top: 14px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-radius: 9px;
+  border: 1px solid var(--border-glass);
+  border-top: 1px solid var(--border-glass-top);
+  box-shadow: 0 6px 20px -2px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.result-status {
+  font-size: 11.5px;
+  font-weight: 550;
+  color: var(--green);
+}
+
+.remaining-pool {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.result-email-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 7px 10px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.result-email {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  color: #ffffff;
+  word-break: break-all;
+}
+
+/* ------------------------------------------------------------- History Section */
+.history-section {
+  margin-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 12px;
+}
+
+.history-title-row {
+  font-size: 11px;
+  font-weight: 550;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-subtle);
+  margin-bottom: 8px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+/* ------------------------------------------------------------- Liquid Glass Item Boxes */
+.history-item,
+.search-email-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.032);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 8px;
+}
+
+.history-item:hover,
+.search-email-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  border-top-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 6px 20px -2px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform: translateY(-0.5px);
+}
+
+.history-item-content,
+.search-email-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+
+.history-item-label,
+.search-email-label {
+  font-size: 12px;
+  font-weight: 550;
+  color: #f3f4f6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+
+.history-item-mail,
+.search-email-address {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: #9ca3af;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: color 0.12s ease;
+}
+
+.history-item-mail:hover,
+.search-email-address:hover {
+  color: #e5e7eb;
+}
+
+/* ------------------------------------------------------------- Item Action Buttons */
+.item-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.action-icon-btn {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid var(--border-glass);
+  border-top: 1px solid var(--border-glass-top);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: var(--text-muted);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.15s ease;
+}
+
+/* Copy Icon */
+.action-icon-btn.copy-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  transform: scale(1.04);
+}
+
+.action-icon-btn.copy-btn.copied {
+  color: var(--green);
+  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+/* Password Key Icon */
+.action-icon-btn.pwd-btn {
+  color: #fbbf24;
+}
+
+.action-icon-btn.pwd-btn:hover {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #fef08a;
+  transform: scale(1.06);
+}
+
+/* Deactivate Trash Icon (Grey) */
+.action-icon-btn.deactivate-btn {
+  color: #9ca3af;
+}
+
+.action-icon-btn.deactivate-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #f3f4f6;
+  transform: scale(1.04);
+}
+
+/* Delete Cross Icon (Red) */
+.action-icon-btn.delete-btn {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.action-icon-btn.delete-btn:hover {
+  background: rgba(239, 68, 68, 0.85);
+  border-color: #ef4444;
+  color: #ffffff;
+  transform: scale(1.04);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.45);
+}
+
+.history-empty {
+  font-size: 11.5px;
+  color: var(--text-subtle);
+  padding: 14px 0;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------- Search View */
+.search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.search-input-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-subtle);
+  pointer-events: none;
+}
+
+.search-input-wrap input {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px 0 32px;
+  background: rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-top: 1px solid var(--border-glass-top);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: #f3f4f6;
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: all 0.15s ease;
+}
+
+.search-input-wrap input:focus {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
+}
+
+.search-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 295px;
+  overflow-y: auto;
+}
+
+/* ------------------------------------------------------------- Settings View */
+.settings-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.settings-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.settings-btn-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.settings-status-box {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--border-glass);
+}
+
+.settings-status-box.success {
+  color: var(--green);
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.settings-status-box.error {
+  color: var(--red);
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* ------------------------------------------------------------- Modal Dialog */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.76);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.modal-card {
+  background: #0d0f15;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 18px 16px;
+  width: 100%;
+  max-width: 310px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+  text-align: center;
+  animation: scaleUp 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-icon-danger {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+}
+
+.modal-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.modal-message {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.modal-email-preview {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: #f3f4f6;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 14px;
+  word-break: break-all;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.hidden { display: none !important; }

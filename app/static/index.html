@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Icloud HME</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png" />
+  <link rel="shortcut icon" href="/static/favicon.ico" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <!-- AUTHENTICATION VIEW -->
+  <div id="auth-container" class="auth-container hidden">
+    <div class="auth-box">
+      <div class="auth-top">
+        <h1 id="auth-title">Log in to iCloud HME</h1>
+        <p id="auth-subtitle">Enter your master password to access your infrastructure</p>
+      </div>
+
+      <form id="auth-form">
+        <div class="form-group">
+          <label for="auth-password" id="auth-label">Master Password</label>
+          <input type="password" id="auth-password" class="form-input" placeholder="Input your password" required autofocus />
+        </div>
+        <div id="auth-error" class="error-banner hidden"></div>
+        <button type="submit" id="auth-submit-btn" class="btn btn-primary btn-block">
+          <span>Log In</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+
+  <main id="onboarding" class="setup-shell hidden">
+    <div class="setup-card">
+      <p id="setup-progress" class="mono setup-progress">02 / NETWORK</p>
+      <section data-setup-step="network">
+        <h1>Make it yours.</h1><p class="muted">Choose the address your browser extension will use to reach this server.</p>
+        <form id="setup-network-form">
+          <label for="setup-addresses">Extension server address</label>
+          <select id="setup-addresses" class="form-input"></select>
+          <div id="setup-custom-address" class="hidden">
+            <label for="setup-url">Custom address</label>
+            <input id="setup-url" class="form-input" type="url" placeholder="https://your-server.example.com" disabled />
+          </div>
+          <p class="muted">Choose localhost for this computer, a LAN or Tailscale address for other devices, or Custom address for your own URL.</p>
+          <button class="btn btn-primary" type="submit">Save address & continue</button>
+        </form>
+      </section>
+      <section data-setup-step="cookies" class="hidden">
+        <h1>Connect your iCloud session.</h1><ol class="cookie-guide">
+<li>Install <a href="https://chromewebstore.google.com/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm" target="_blank" rel="noopener noreferrer">Cookie-Editor for Chrome</a>.</li>
+<li>Sign in at <a href="https://www.icloud.com/" target="_blank" rel="noopener noreferrer">icloud.com</a>. Choose <strong>Trust this browser / device</strong> when prompted.</li>
+<li>Stay on the signed-in iCloud tab and open Cookie-Editor. If permission is requested, select <strong>This site</strong>.</li>
+<li>Click <strong>Export &rarr; Header String</strong>. The cookies are copied to your clipboard.</li>
+<li>Paste the result below. Do not choose JSON. Treat these cookies as account credentials; never share them.</li>
+</ol><p class="muted">Keep the server running 24/7 with Internet access so it can attempt session refreshes every 90-180 seconds and maintain the reserve. Sleep, shutdown or outages interrupt this. Apple can still expire or revoke the session; export fresh cookies if needed.</p>
+        <form id="setup-cookies-form">
+          <label for="setup-cookies">iCloud cookies - Header String</label>
+          <textarea id="setup-cookies" class="form-textarea" rows="5" required autocomplete="off" spellcheck="false"></textarea>
+          <div class="setup-actions">
+            <button class="btn btn-secondary" type="button" id="setup-back-network">Back</button>
+            <button class="btn btn-secondary" type="button" id="setup-explore">Explore the app</button>
+            <button class="btn btn-primary" type="submit">Save cookies & connect</button>
+          </div>
+          <p class="muted">You can explore without connecting iCloud and add your cookies later in Settings.</p>
+        </form>
+      </section>
+      <section data-setup-step="extension" class="hidden">
+        <h1>Your browser, connected.</h1>
+        <p>Extension server: <code id="setup-chosen-url"></code></p>
+        <ol class="cookie-guide"><li>Download and extract the ZIP below.</li><li>Open <code>chrome://extensions</code>, enable Developer mode, choose <strong>Load unpacked</strong> and select the extracted folder containing <code>manifest.json</code>.</li><li>Create an API key below, copy it into the extension settings, save and test the connection. The ZIP contains the selected URL, without your cookies or API key.</li></ol>
+        <div class="setup-actions"><a class="btn btn-secondary" href="/api/extension/download" download="icloud-hme-extension.zip" data-download-extension>Download extension ZIP</a><button class="btn btn-secondary" id="setup-create-key" type="button">Create API key</button></div>
+        <label for="setup-api-key">API key - copy now, shown once</label>
+        <input id="setup-api-key" class="form-input mono" readonly autocomplete="off" />
+        <button class="btn btn-primary" type="button" id="setup-finish">Open dashboard</button>
+        <aside class="setup-support">
+          <div>
+            <strong>Enjoying iCloud HME?</strong>
+            <p class="muted">Put a star on the repo to support the project.</p>
+          </div>
+          <a class="repo-star" href="https://github.com/anthochedd/icloud-hme-extension" target="_blank" rel="noopener noreferrer" aria-label="Star iCloud HME on GitHub">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m12 3 2.8 5.7 6.3.9-4.5 4.4 1.1 6.2-5.7-3-5.7 3 1.1-6.2L3.2 9.6l6.3-.9Z"/></svg>
+            <span>Star the repo</span>
+            <span class="repo-star-count" data-repo-stars hidden></span>
+          </a>
+        </aside>
+      </section>
+      <p id="setup-error" role="alert" class="setup-error"></p>
+    </div>
+  </main>
+  <!-- MAIN APPLICATION VIEW -->
+  <div id="app-container" class="hidden">
+    <!-- Vercel Navigation Header -->
+    <header class="v-header">
+      <div class="v-header-top">
+        <div class="v-brand">
+          <span class="v-brand-name">iCloud HME</span>
+        </div>
+
+        <div class="v-header-actions">
+          <div id="account-pill" class="v-account-badge" title="Active iCloud Account">
+            <span class="v-status-dot"></span>
+            <span id="account-email">Checking session…</span>
+          </div>
+          <a class="repo-star repo-star-header" href="https://github.com/anthochedd/icloud-hme-extension" target="_blank" rel="noopener noreferrer" title="Star the repo on GitHub" aria-label="Star iCloud HME on GitHub">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m12 3 2.8 5.7 6.3.9-4.5 4.4 1.1 6.2-5.7-3-5.7 3 1.1-6.2L3.2 9.6l6.3-.9Z"/></svg>
+            <span class="repo-star-label">Star</span>
+            <span class="repo-star-count" data-repo-stars hidden></span>
+          </a>
+          <button id="theme-toggle-btn" class="btn btn-icon" title="Toggle Theme" aria-label="Toggle Theme">
+            <svg id="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+          </button>
+          <button id="refresh-global-btn" class="btn btn-icon" title="Synchronize iCloud Session" aria-label="Refresh Session">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+            </svg>
+          </button>
+          <button id="reconfigure-btn" class="btn btn-secondary btn-sm hidden" type="button">Setup</button>
+          <button id="logout-btn" class="btn btn-secondary btn-sm" title="Log Out">Log Out</button>
+        </div>
+      </div>
+
+      <!-- Subnavigation Tab Strip -->
+      <nav class="v-tabs-strip">
+        <button class="v-tab active" data-tab="tab-pool">
+          <span>Overview</span>
+          <span id="nav-pool-count" class="v-counter">0/10</span>
+        </button>
+        <button class="v-tab" data-tab="tab-emails">
+          <span>Addresses</span>
+          <span id="nav-email-count" class="v-counter">0</span>
+        </button>
+        <button class="v-tab" data-tab="tab-manual">
+          <span>Generate</span>
+        </button>
+        <button class="v-tab" data-tab="tab-keys">
+          <span>Chrome Extension</span>
+        </button>
+        <button class="v-tab" data-tab="tab-settings">
+          <span>Settings</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- Main Container -->
+    <main class="v-main">
+      <div id="global-alert" class="error-banner hidden" style="margin-bottom: 24px;"></div>
+
+      <!-- TAB 1: OVERVIEW & POOL (10 SLOTS) -->
+      <section id="tab-pool" class="tab-content active">
+        <div class="v-page-header">
+          <div>
+            <h1>Overview</h1>
+            <p>A reserve of up to 10 pre-generated addresses, replenished in the background.</p>
+          </div>
+          <div class="v-actions-group">
+            <button id="pool-force-replenish-btn" class="btn btn-secondary">
+              <span>Sync Pool</span>
+            </button>
+            <button id="claim-direct-btn" class="btn btn-primary">
+              <span>Claim Email Now</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Recently Assigned Emails (First on Overview) -->
+        <h3 style="margin: 0 0 12px;">Recently Assigned Emails</h3>
+        <div class="table-wrap" style="margin-bottom: 28px;">
+          <table class="v-table">
+            <thead>
+              <tr>
+                <th>Domain / Label</th>
+                <th>iCloud Address</th>
+                <th>Assigned Date</th>
+                <th width="100">Action</th>
+              </tr>
+            </thead>
+            <tbody id="claimed-history-tbody">
+              <tr><td colspan="4" class="muted" style="text-align: center; padding: 24px;">No emails claimed yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Metric Grid -->
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-title">Reserve Pool</div>
+            <div class="stat-num-row">
+              <span id="pool-ready-num" class="stat-large">0</span>
+              <span class="stat-sub">/ 10 ready</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-title">Pool Status</div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+              <span id="pool-status-dot" class="v-status-dot"></span>
+              <span id="pool-status-text" style="font-weight: 500;">Initializing…</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-title">Apple Hourly Limit</div>
+            <div class="stat-num-row">
+              <span id="pool-hourly-num" class="stat-large">0</span>
+              <span class="stat-sub">/ 4 per hour</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-title">iCloud Total Capacity</div>
+            <div class="stat-num-row">
+              <span id="overview-capacity-num" class="stat-large">0</span>
+              <span class="stat-sub">/ 750 max</span>
+            </div>
+            <div id="overview-capacity-sub" style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">Active, Inactive, Pool Reserve &amp; Sign in with Apple</div>
+          </div>
+        </div>
+
+        <!-- 10 Slots Grid -->
+        <h3 style="margin-bottom: 12px;">Reserve Slots (10)</h3>
+        <div id="pool-slots-grid" class="pool-slots-container"></div>
+      </section>
+
+      <!-- TAB 2: ALL EMAILS -->
+      <section id="tab-emails" class="tab-content hidden">
+        <div class="v-page-header">
+          <div>
+            <h1>Email Addresses</h1>
+            <p>Manage all Hide-My-Email addresses associated with your iCloud account.</p>
+          </div>
+          <div class="v-actions-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button id="bulk-activate-btn" class="btn btn-secondary hidden">
+              <span>Set as Active (<span class="selected-count">0</span>)</span>
+            </button>
+            <button id="bulk-deactivate-btn" class="btn btn-secondary hidden">
+              <span>Set as Inactive (<span class="selected-count">0</span>)</span>
+            </button>
+            <button id="bulk-delete-btn" class="btn btn-danger hidden">
+              <span>Delete (<span class="selected-count">0</span>)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Search & Filter Toolbar -->
+        <div class="card toolbar-card">
+          <div class="search-box">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-secondary);">
+              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input type="text" id="email-search" placeholder="Search by address or label…" />
+          </div>
+          <div class="filter-group">
+            <button class="filter-btn active" data-filter="all">All (<span id="count-all">0</span>)</button>
+            <button class="filter-btn" data-filter="pool">Pool (<span id="count-pool">0</span>)</button>
+            <button class="filter-btn" data-filter="active">Active (<span id="count-active">0</span>)</button>
+            <button class="filter-btn" data-filter="inactive">Inactive (<span id="count-inactive">0</span>)</button>
+          </div>
+        </div>
+
+        <!-- Email Table -->
+        <div class="table-wrap">
+          <table class="v-table">
+            <thead>
+              <tr>
+                <th width="36"><input type="checkbox" id="select-all-emails" /></th>
+                <th>Label</th>
+                <th>iCloud Address</th>
+                <th width="90">Password</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th width="140">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="emails-tbody">
+              <tr><td colspan="7" class="muted" style="text-align: center; padding: 32px;">Loading addresses…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 3: MANUAL GENERATION -->
+      <section id="tab-manual" class="tab-content hidden">
+        <div class="v-page-header">
+          <div>
+            <h1>Generate Addresses</h1>
+            <p>Create a batch of custom Hide-My-Email addresses with formula pattern support.</p>
+          </div>
+          <div class="v-actions-group">
+            <div class="v-badge" id="capacity-badge" style="background: rgba(0,0,0,0.05); padding: 8px 14px; font-size: 13px; border-radius: 6px;">
+              iCloud Capacity: <strong id="gen-capacity-used">0</strong> / <strong>750</strong>
+              <span id="gen-capacity-breakdown" style="font-size: 11.5px; opacity: 0.8; margin-left: 6px;">(Active, Inactive, Pool Reserve &amp; Sign in with Apple)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="max-width: 620px;">
+          <form id="manual-gen-form">
+            <div class="form-row">
+              <div class="form-group" style="flex: 1;">
+                <label for="manual-count">Quantity</label>
+                <input type="number" id="manual-count" class="form-input" min="1" max="50" value="3" required />
+              </div>
+              <div class="form-group" style="flex: 2;">
+                <label for="manual-label">Label Pattern</label>
+                <input type="text" id="manual-label" class="form-input" placeholder="e.g. Test_%02d, Account_### or Shop_{n}…" />
+              </div>
+            </div>
+            <div style="font-size: 12.5px; line-height: 1.5; color: var(--text-secondary); margin-bottom: 18px; background: var(--bg-subtle); padding: 12px 14px; border-radius: 6px;">
+              💡 <b>Automatic sequence &amp; numbering formats:</b><br/>
+              • Standard sequence: <code>Test_%d</code> → <em>Test_1, Test_2, Test_3…</em><br/>
+              • Zero-padded sequence: <code>Test_%02d</code> or <code>Account_###</code> → <em>Test_01, Test_02… / Account_001, Account_002…</em><br/>
+              • Variable placeholder: <code>Client_{n}</code> or <code>Service_{#}</code> → <em>Client_1, Client_2… / Service_1, Service_2…</em><br/>
+              • Custom step formula: <code>Order_&lt;10+5&gt;</code> → <em>Order_10, Order_15, Order_20…</em><br/>
+              • <b>Strict Apple quota:</b> maximum <strong>4 new addresses per hour</strong>. Batches over 4 will automatically pause between creations to honor the rate limit. Maximum capacity is <strong>750 addresses</strong> total on your iCloud account (including active, inactive, pool reserve, and Sign in with Apple addresses).
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button type="submit" id="start-manual-btn" class="btn btn-primary">Start Generation</button>
+              <button type="button" id="stop-manual-btn" class="btn btn-danger hidden">Stop Generation</button>
+            </div>
+          </form>
+
+          <div id="manual-job-status" class="hidden" style="margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.06);">
+            <div style="display: flex; justify-content: space-between; font-weight: 500; margin-bottom: 8px;">
+              <span id="manual-job-title">Generation in progress…</span>
+              <span id="manual-job-count">0/0</span>
+            </div>
+            <p id="manual-job-desc" class="muted" style="font-size: 13px;"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: CHROME EXTENSION & API KEYS -->
+      <section id="tab-keys" class="tab-content hidden">
+        <div class="v-page-header">
+          <div>
+            <h1>Chrome Extension</h1>
+            <p>Download the pre-configured extension and generate API keys for 1-click domain attribution.</p>
+          </div>
+          <div class="v-actions-group">
+            <a id="download-ext-btn" class="btn btn-secondary" href="/api/extension/download" download="icloud-hme-extension.zip" data-download-extension>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+              </svg>
+              <span>Download Extension (.zip)</span>
+            </a>
+            <button id="new-key-btn" class="btn btn-primary">
+              <span>Create API Key</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Connection Details Card -->
+        <div class="card">
+          <h3 style="margin-bottom: 6px;">Connection Endpoints</h3>
+          <p class="muted" style="margin-bottom: 16px;">The ZIP uses the server URL selected in Setup. Detected connection addresses are shown below:</p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div>
+              <span class="muted" style="font-size: 12px; font-weight: 500; text-transform: uppercase;">Tailscale Endpoint</span>
+              <div class="code-display">
+                <code id="tailscale-url-val">Checking…</code>
+                <button class="btn btn-secondary btn-sm" data-copy="tailscale-url-val">Copy</button>
+              </div>
+            </div>
+            <div>
+              <span class="muted" style="font-size: 12px; font-weight: 500; text-transform: uppercase;">Local LAN Endpoint</span>
+              <div class="code-display">
+                <code id="lan-url-val">Checking…</code>
+                <button class="btn btn-secondary btn-sm" data-copy="lan-url-val">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-banner" style="margin-bottom: 0;">
+            <p><b>Quick Installation Guide:</b></p>
+            <ol style="margin-left: 20px; margin-top: 6px; display: flex; flex-direction: column; gap: 4px;">
+              <li>Click <b>Download Extension (.zip)</b> above and extract the folder.</li>
+              <li>Navigate to <code>chrome://extensions</code> in Chrome / Brave and enable <b>Developer Mode</b>.</li>
+              <li>Click <b>Load unpacked</b> and select the extracted extension directory.</li>
+              <li>Open the extension popup and paste your API key to connect instantly.</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- Active API Keys Table -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin: 32px 0 12px;">
+          <h3 style="margin: 0;">API Keys (<span id="keys-count-badge">0</span>)</h3>
+          <span class="muted" style="font-size: 13px;">Create separate keys for your devices</span>
+        </div>
+        <div class="table-wrap">
+          <table class="v-table">
+            <thead>
+              <tr>
+                <th>Key Name</th>
+                <th>API Key Prefix</th>
+                <th>Created</th>
+                <th>Last Used</th>
+                <th width="160">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="keys-tbody">
+              <tr><td colspan="5" class="muted" style="text-align: center; padding: 24px;">No API keys created yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 5: SETTINGS & COOKIES -->
+      <section id="tab-settings" class="tab-content hidden">
+        <div class="v-page-header">
+          <div>
+            <h1>Settings</h1>
+            <p>Manage your iCloud web cookies and inspect system activity logs.</p>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px; margin-bottom: 32px;">
+          <!-- Cookies Form -->
+          <div class="card">
+            <h3 style="margin-bottom: 6px;">iCloud Authentication</h3>
+            <p class="muted" style="margin-bottom: 16px;">Paste your iCloud web session cookie string or place <code>cookies.txt</code> in the project root:</p>
+            <ol class="cookie-guide">
+<li>Install <a href="https://chromewebstore.google.com/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm" target="_blank" rel="noopener noreferrer">Cookie-Editor for Chrome</a>.</li>
+<li>Sign in at <a href="https://www.icloud.com/" target="_blank" rel="noopener noreferrer">icloud.com</a>. Choose <strong>Trust this browser / device</strong> when prompted.</li>
+<li>Stay on the signed-in iCloud tab and open Cookie-Editor. If permission is requested, select <strong>This site</strong>.</li>
+<li>Click <strong>Export &rarr; Header String</strong>. The cookies are copied to your clipboard.</li>
+<li>Paste the result below. Do not choose JSON. Treat these cookies as account credentials; never share them.</li>
+</ol><p class="muted">Keep the server running 24/7 with Internet access so it can attempt session refreshes every 90-180 seconds and maintain the reserve. Sleep, shutdown or outages interrupt this. Apple can still expire or revoke the session; export fresh cookies if needed.</p>
+            <form id="cookies-form">
+              <div class="form-group">
+                <label for="cookies-input">Cookie String</label>
+                <textarea id="cookies-input" class="form-textarea" rows="5" placeholder="X-APPLE-WEBAUTH-USER=&quot;…&quot;; X-APPLE-WEBAUTH-TOKEN=&quot;…&quot;; …"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="proxy-input">Proxy (Optional)</label>
+                <input type="text" id="proxy-input" class="form-input" placeholder="http://user:pass@host:port or host:port:user:pass" />
+                <span class="muted" style="font-size: 11.5px; margin-top: 4px;">HTTP/HTTPS proxy for all iCloud requests (optional)</span>
+              </div>
+              <button type="submit" class="btn btn-primary" id="cookies-submit-btn">Save Cookies & Connect</button>
+            </form>
+          </div>
+
+          <!-- Change Master Password Form -->
+          <div class="card">
+            <h3 style="margin-bottom: 6px;">Change Master Password</h3>
+            <p class="muted" style="margin-bottom: 16px;">Update your dashboard administrator authentication password:</p>
+            <form id="change-password-form">
+              <div class="form-group">
+                <label for="pwd-old">Current Password</label>
+                <input type="password" id="pwd-old" class="form-input" placeholder="Input your password" required />
+              </div>
+              <div class="form-group">
+                <label for="pwd-new">New Password</label>
+                <input type="password" id="pwd-new" class="form-input" placeholder="At least 4 characters" minlength="4" required />
+              </div>
+              <div class="form-group">
+                <label for="pwd-repeat">Repeat New Password</label>
+                <input type="password" id="pwd-repeat" class="form-input" placeholder="Input your password" minlength="4" required />
+              </div>
+              <div id="change-pwd-error" class="error-banner hidden" style="margin-bottom: 14px;"></div>
+              <button type="submit" class="btn btn-primary" id="change-pwd-btn">Change Password</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Activity Logs -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <h3>Activity Logs</h3>
+          <button id="refresh-logs-btn" class="btn btn-secondary btn-sm">Refresh Logs</button>
+        </div>
+        <div class="card" style="padding: 16px; background-color: var(--bg-subtle);">
+          <div id="logs-container" style="font-family: var(--font-mono); font-size: 12.5px; max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- Claim Modal -->
+  <div id="claim-modal" class="modal-overlay hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2>Claim Email from Reserve</h2>
+        <p>An available address is taken from the reserve and renamed through the iCloud API.</p>
+      </div>
+      <form id="claim-form">
+        <div class="form-group">
+          <label for="claim-label">Domain or Custom Label</label>
+          <input type="text" id="claim-label" class="form-input" placeholder="e.g. github.com…" required autofocus />
+        </div>
+        <div class="form-group">
+          <label for="claim-note">Note (Optional)</label>
+          <input type="text" id="claim-note" class="form-input" placeholder="Personal account…" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Claim Email</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Rename Modal -->
+  <div id="rename-modal" class="modal-overlay hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2>Rename Address</h2>
+        <p id="rename-email-hint"></p>
+      </div>
+      <form id="rename-form">
+        <input type="hidden" id="rename-anon-id" />
+        <div class="form-group">
+          <label for="rename-label-input">New Label</label>
+          <input type="text" id="rename-label-input" class="form-input" required autofocus />
+        </div>
+        <div class="form-group">
+          <label for="rename-note-input">Note (Optional)</label>
+          <input type="text" id="rename-note-input" class="form-input" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- New Key Modal -->
+  <div id="new-key-modal" class="modal-overlay hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2>Create API Key</h2>
+        <p>Generate an API key for your Chrome extension or integration.</p>
+      </div>
+      <form id="create-key-form">
+        <div class="form-group">
+          <label for="new-key-name">Key Description / Device</label>
+          <input type="text" id="new-key-name" class="form-input" placeholder="e.g. MacBook Chrome…" required autofocus />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Key</button>
+        </div>
+      </form>
+
+      <div id="key-result-box" class="hidden">
+        <div class="info-banner" style="background-color: var(--green-subtle); color: var(--green); box-shadow: 0 0 0 1px var(--green);">
+          API Key created successfully. Copy it now as it will not be displayed again.
+        </div>
+        <div class="code-display" style="margin-top: 14px;">
+          <code id="generated-key-text"></code>
+          <button type="button" id="copy-new-key-btn" class="btn btn-secondary btn-sm" data-copy="generated-key-text">Copy Key</button>
+        </div>
+        <div class="modal-footer" style="margin-top: 20px;">
+          <button type="button" id="create-another-key-btn" class="btn btn-secondary">+ Create Another Key</button>
+          <button type="button" class="btn btn-primary modal-cancel">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm / Alert Dialog Modal -->
+  <div id="confirm-modal" class="modal-overlay hidden" style="z-index: 300;">
+    <div class="modal-dialog" style="max-width: 440px; padding: 24px;">
+      <div class="modal-header" style="margin-bottom: 14px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+          <div id="confirm-modal-icon" style="width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(238, 0, 0, 0.1); color: var(--red); flex-shrink: 0;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 id="confirm-modal-title" style="font-size: 17px; font-weight: 600; margin: 0;">Confirmation</h2>
+        </div>
+        <p id="confirm-modal-message" style="margin: 8px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--text-secondary);"></p>
+      </div>
+      <div class="modal-footer" style="margin-top: 22px;">
+        <button type="button" id="confirm-modal-cancel" class="btn btn-secondary">Cancel</button>
+        <button type="button" id="confirm-modal-ok" class="btn btn-danger">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sonner-style Toast -->
+  <div id="toast" class="toast hidden" aria-live="polite"></div>
+
+  <script src="/static/repository.js"></script>
+  <script src="/static/onboarding.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
